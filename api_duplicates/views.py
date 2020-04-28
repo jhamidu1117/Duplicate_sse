@@ -36,5 +36,8 @@ class TRGsView(APIView):
         serializer = TRGidSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+            trgs = TRGid.objects.all()[:5]
+            last_ten = dict(reversed(trgs))
+            response_serializer = TRGidSerializer(data=last_ten, many=True)
+            return JsonResponse(response_serializer.initial_data, status=status.HTTP_201_CREATED, safe=False)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
