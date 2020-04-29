@@ -26,18 +26,19 @@ class TRGsView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request):
-        trgs = TRGid.objects.all()
-        serializer = TRGidSerializer(trgs, many=True)
-        content = {'message': 'Hello, World!'}
-        return JsonResponse(serializer.data, safe=False)
+        trgs = TRGid.objects.all().order_by('-id').values()[:5]
+        last_five = list(reversed(trgs))
+        serializer = TRGidSerializer(data=last_five, many=True)
+        # content = {'message': 'Hello, World!'}
+        return JsonResponse(serializer.initial_data, safe=False)
 
     def post(self, request):
         data = JSONParser().parse(request)
         serializer = TRGidSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            trgs = TRGid.objects.all()[:5]
-            last_ten = dict(reversed(trgs))
+            trgs = TRGid.objects.all().order_by('-id').values()[:5]
+            last_ten = list(reversed(trgs))
             response_serializer = TRGidSerializer(data=last_ten, many=True)
             return JsonResponse(response_serializer.initial_data, status=status.HTTP_201_CREATED, safe=False)
         return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
